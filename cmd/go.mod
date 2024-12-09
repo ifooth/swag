@@ -1,11 +1,11 @@
 module github.com/ifooth/swag/cmd
 
-replace github.com/swaggo/swag => ../
-
 go 1.23
 
+replace github.com/swaggo/swag => ../
+
 require (
-	github.com/swaggo/swag v0.0.0-00010101000000-000000000000
+	github.com/swaggo/swag v1.16.4
 	github.com/urfave/cli/v2 v2.27.5
 )
 
