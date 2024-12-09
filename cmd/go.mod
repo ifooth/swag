@@ -2,7 +2,7 @@ module github.com/ifooth/swag/cmd
 
 replace github.com/swaggo/swag => ../
 
-go 1.23.0
+go 1.23
 
 require (
 	github.com/swaggo/swag v0.0.0-00010101000000-000000000000
