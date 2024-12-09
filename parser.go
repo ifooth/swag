@@ -669,6 +669,8 @@ func parseGeneralAPIInfo(parser *Parser, comments []string) error {
 
 				if strings.Contains(extensionName, "logo") {
 					parser.swagger.Info.Extensions.Add(extensionName, valueJSON)
+				} else if strings.Contains(extensionName, "bk-apigateway") {
+					parser.swagger.Extensions["x-bk-apigateway-resource"] = valueJSON
 				} else {
 					if parser.swagger.Extensions == nil {
 						parser.swagger.Extensions = make(map[string]interface{})

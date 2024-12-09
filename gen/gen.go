@@ -224,6 +224,15 @@ func (g *Gen) Build(config *Config) error {
 
 	swagger := p.GetSwagger()
 
+	// for _, v := range swagger.Paths.Paths {
+	// 	fmt.Println("leijaiomin")
+	// 	for k, v := range v.Get.Extensions {
+	// 		if k == "x-bk-apigateway-resource" {
+	// 			fmt.Println("leijioamin", v)
+	// 		}
+	// 	}
+	// }
+
 	if err := os.MkdirAll(config.OutputDir, os.ModePerm); err != nil {
 		return err
 	}
