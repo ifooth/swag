@@ -1,6 +1,7 @@
 package swag
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -18,6 +19,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/KyleBanks/depth"
 	"github.com/go-openapi/spec"
@@ -182,6 +184,8 @@ type Parser struct {
 
 	// ParseFuncBody whether swag should parse api info inside of funcs
 	ParseFuncBody bool
+
+	kv map[string]string
 }
 
 // FieldParserFactory create FieldParser.
@@ -310,6 +314,13 @@ func SetTags(include string) func(*Parser) {
 				p.tags[f] = struct{}{}
 			}
 		}
+	}
+}
+
+// SetKv sets the kv values
+func SetKv(kv map[string]string) func(*Parser) {
+	return func(p *Parser) {
+		p.kv = kv
 	}
 }
 
@@ -661,16 +672,26 @@ func parseGeneralAPIInfo(parser *Parser, comments []string) error {
 					return fmt.Errorf("annotation %s need a value", attribute)
 				}
 
+				tpl, err := template.New("").Parse(value)
+				if err != nil {
+					return err
+				}
+				buf := bytes.NewBuffer(nil)
+				if err = tpl.Execute(buf, parser.kv); err != nil {
+					return err
+				}
+
 				var valueJSON interface{}
-				err := json.Unmarshal([]byte(value), &valueJSON)
+				err = json.Unmarshal(buf.Bytes(), &valueJSON)
 				if err != nil {
 					return fmt.Errorf("annotation %s need a valid json value", attribute)
 				}
 
 				if strings.Contains(extensionName, "logo") {
 					parser.swagger.Info.Extensions.Add(extensionName, valueJSON)
-				} else if strings.Contains(extensionName, "bk-apigateway") {
-					parser.swagger.Extensions["x-bk-apigateway-resource"] = valueJSON
+				} else if strings.HasPrefix(extensionName, "x-info-") {
+					name := "x-" + strings.TrimPrefix(extensionName, "x-info-")
+					parser.swagger.Info.Extensions.Add(name, valueJSON)
 				} else {
 					if parser.swagger.Extensions == nil {
 						parser.swagger.Extensions = make(map[string]interface{})

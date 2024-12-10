@@ -149,6 +149,8 @@ type Config struct {
 
 	// ParseFuncBody whether swag should parse api info inside of funcs
 	ParseFuncBody bool
+
+	KV map[string]string
 }
 
 // Build builds swagger json file  for given searchDir and mainAPIFile. Returns json.
@@ -209,6 +211,7 @@ func (g *Gen) Build(config *Config) error {
 		swag.SetTags(config.Tags),
 		swag.SetCollectionFormat(config.CollectionFormat),
 		swag.SetPackagePrefix(config.PackagePrefix),
+		swag.SetKv(config.KV),
 	)
 
 	p.PropNamingStrategy = config.PropNamingStrategy

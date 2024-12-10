@@ -186,6 +186,11 @@ var initFlags = []cli.Flag{
 		// Value: false,
 		Usage: "Parse API info within body of functions in go files, disabled by default (default: false)",
 	},
+	&cli.StringSliceFlag{
+		Name: "kv",
+		// Value: false,
+		Usage: "kv strings, a=b",
+	},
 }
 
 func initAction(ctx *cli.Context) error {
@@ -234,6 +239,15 @@ func initAction(ctx *cli.Context) error {
 		)
 	}
 
+	kv := map[string]string{}
+	for _, v := range ctx.StringSlice("kv") {
+		parts := strings.Split(v, "=")
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid kv pair: %s", v)
+		}
+		kv[parts[0]] = parts[1]
+	}
+
 	var pdv = ctx.Int(parseDependencyLevelFlag)
 	if pdv == 0 {
 		if ctx.Bool(parseDependencyFlag) {
@@ -268,6 +282,7 @@ func initAction(ctx *cli.Context) error {
 		PackagePrefix:       ctx.String(packagePrefixFlag),
 		State:               ctx.String(stateFlag),
 		ParseFuncBody:       ctx.Bool(parseFuncBodyFlag),
+		KV:                  kv,
 	})
 }
 
