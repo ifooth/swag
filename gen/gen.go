@@ -227,14 +227,41 @@ func (g *Gen) Build(config *Config) error {
 
 	swagger := p.GetSwagger()
 
-	// for _, v := range swagger.Paths.Paths {
-	// 	fmt.Println("leijaiomin")
-	// 	for k, v := range v.Get.Extensions {
-	// 		if k == "x-bk-apigateway-resource" {
-	// 			fmt.Println("leijioamin", v)
-	// 		}
-	// 	}
-	// }
+	setExtension := func(path string, method string, item *spec.Operation) {
+		apigw, ok := item.Extensions["x-bk-apigateway"]
+		if !ok {
+			return
+		}
+		delete(item.Extensions, "x-bk-apigateway")
+
+		apigwMap, ok := apigw.(map[string]any)
+		if !ok {
+			return
+		}
+		item.Extensions["x-bk-apigateway-resource"] = bkAPIGwResource{
+			IsPublic: apigwMap["isPublic"].(bool),
+			Backend:  backend{Type: "HTTP", Path: path, Method: method, Timeout: 30},
+			AuthConfig: authConfig{
+				AppVerifiedRequired:  apigwMap["appVerifiedRequired"].(bool),
+				UserVerifiedRequired: apigwMap["userVerifiedRequired"].(bool),
+			},
+		}
+	}
+
+	for apiPath, v := range swagger.Paths.Paths {
+		if v.Get != nil {
+			setExtension(apiPath, "get", v.Get)
+		}
+		if v.Put != nil {
+			setExtension(apiPath, "put", v.Put)
+		}
+		if v.Post != nil {
+			setExtension(apiPath, "post", v.Post)
+		}
+		if v.Delete != nil {
+			setExtension(apiPath, "delete", v.Delete)
+		}
+	}
 
 	if err := os.MkdirAll(config.OutputDir, os.ModePerm); err != nil {
 		return err
